@@ -1,285 +1,135 @@
-const PCM_DPC_URL = "https://raw.githubusercontent.com/ma7555/Egypt-Covid19/master/EG-COVID-19.json"
-const display_config = {
-  type: 'line',
-  data: {
-    labels: [],
-    datasets: [{
-      label: '',
-      backgroundColor: "rgb(255, 99, 132)",
-      borderColor: "rgb(255, 99, 132)",
-      data: [],
-      fill: false,
-    },]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio : false,
-    onResize : function(chart,new_size){
-      chart.canvas.parentNode.style.height = '40vh';
-      chart.canvas.parentNode.style.width = '80vw';
-    },
-    title: {
-      display: true,
-      text: 'Covid-19 Italian data'
-    },
-    tooltips: {
-      mode: 'index',
-      intersect: true,
-    },
-    hover: {
-      mode: 'nearest',
-      intersect: true
-    },
-    scales: {
-      xAxes: [{
-        display: true,
-        scaleLabel: {
-          display: true,
-          labelString: 'Day'
-        }
-      }],
-      yAxes: [{
-        display: true,
-        scaleLabel: {
-          display: true,
-          labelString: ''
-        }
-      }]
-    }
+function parse_data(raw_data){
+  var parsed_data = {
+    "days": [],
+    "CumConfirmed": [],
+    "CumDeaths": [],
+    "CumRecovered": [],
+    "CumActive": [],
+    "NewConfirmed": [],
+    "NewDeaths": [],
+    "NewRecovered": [],
+    "DiffYesterday": [],
+    "MortalityRateInfection": [],
+    "MortalityRateClosed": [],
   }
-};
-const monthNames = ["January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
-];
-function toggleDisplay() {
-  var x = document.getElementsByClassName("lds-ring");
-  var y = document.getElementsByClassName("chart-container")
-  for (let index = 0; index < x.length; index++) {
-      x[index].style.display = "none";
-  }
-  for (let index = 0; index < y.length; index++) {
-      y[index].style.display = "block";
-  }
-}
 
-// function show_section(sec_name){
-//   //hide all sections
-//   document.getElementById("cum-container").style.display = "none";
-//   document.getElementById("daily-container").style.display = "none";
-//   document.getElementById("stats-container").style.display = "none";
-//   // show only passed one one
-//   document.getElementById(sec_name).style.display = "block";
-//   console.log("section : "+ sec_name + " show now be visible");
-// }
-// function show_all_sections(){
-//   document.getElementById("cum-container").style.display = "block";
-//   document.getElementById("daily-container").style.display = "block";
-//   document.getElementById("stats-container").style.display = "block";
-// }
-var cached_data = null;
-
-function plotter(covid_data){
-
-  days = [];
-  CumConfirmed_array = [];
-  CumDeaths_array = [];
-  CumRecovered_array = [];
-  CumActive_array = [];
-
-  NewConfirmed_array = [];
-  NewDeaths_array = [];
-  NewRecovered_array = [];
-
-  DiffYesterday_array = [];
-  MortalityRateInfection_array = [];
-  MortalityRateClosed_array = [];
-
-  for(var k in covid_data) {
-    var myDate = new Date(covid_data[k].date);
+  for(var k in raw_data) {
+    var myDate = new Date(raw_data[k].date);
     var parsed_date = myDate.getDate()+" "+(monthNames[myDate.getMonth()]);
-    days.push(parsed_date);
-    CumConfirmed_array.push(covid_data[k].CumConfirmed);
-    CumDeaths_array.push(covid_data[k].CumDeaths);
-    CumRecovered_array.push(covid_data[k].CumRecovered);
-    NewConfirmed_array.push(covid_data[k].NewConfirmed);
-    NewDeaths_array.push(covid_data[k].NewDeaths);
-    NewRecovered_array.push(covid_data[k].NewRecovered);
-    CumActive_array.push(covid_data[k].CumActive);
-    DiffYesterday_array.push(covid_data[k].DiffYesterday);
-    MortalityRateInfection_array.push(covid_data[k].MortalityRateInfection);
-    MortalityRateClosed_array.push(covid_data[k].MortalityRateClosed);
+    parsed_data.days.push(parsed_date);
+    parsed_data.CumConfirmed.push(raw_data[k].CumConfirmed);
+    parsed_data.CumDeaths.push(raw_data[k].CumDeaths);
+    parsed_data.CumRecovered.push(raw_data[k].CumRecovered);
+    parsed_data.NewConfirmed.push(raw_data[k].NewConfirmed);
+    parsed_data.NewDeaths.push(raw_data[k].NewDeaths);
+    parsed_data.NewRecovered.push(raw_data[k].NewRecovered);
+    parsed_data.CumActive.push(raw_data[k].CumActive);
+    parsed_data.DiffYesterday.push(raw_data[k].DiffYesterday);
+    parsed_data.MortalityRateInfection.push(raw_data[k].MortalityRateInfection);
+    parsed_data.MortalityRateClosed.push(raw_data[k].MortalityRateClosed);
+  }
+  return parsed_data;
 }
-  var CumConfirmed_ctx = document.getElementById('chart-cum-confirmed').getContext('2d');
-  var CumActive_ctx  = document.getElementById('chart-cum-active').getContext('2d');
-  var CumDeaths_ctx = document.getElementById('chart-cum-death').getContext('2d');
-  var CumRecovered_ctx = document.getElementById('chart-cum-recovered').getContext('2d');
-  
-  var NewConfirmed_ctx = document.getElementById('chart-new-confirmed').getContext('2d');
-  var NewDeaths_ctx = document.getElementById('chart-new-deaths').getContext('2d');    
-  var NewRecovered_ctx = document.getElementById('chart-new-recoveries').getContext('2d');
-  
-  var DiffYesterday_ctx = document.getElementById('chart-DiffYesterday').getContext('2d');
-  var MortalityRateInfection_ctx = document.getElementById('chart-MortalityRateInfection').getContext('2d');
-  var MortalityRateClosed_ctx = document.getElementById('chart-MortalityRateClosed').getContext('2d');
-  
-
-  var CumConfirmed_cfg = $.extend( true, {}, display_config );
-  var CumActive_cfg = $.extend( true, {}, display_config );
-  var CumDeaths_cfg = $.extend( true, {}, display_config );
-  var CumRecovered_cfg = $.extend( true, {}, display_config );
-  
-  var NewConfirmed_cfg = $.extend( true, {}, display_config );
-  var NewDeaths_cfg = $.extend( true, {}, display_config );
-  var NewRecovered_cfg = $.extend( true, {}, display_config );
-
-  var DiffYesterday_cfg = $.extend( true, {}, display_config );
-  var MortalityRateInfection_cfg = $.extend( true, {}, display_config );
-  var MortalityRateClosed_cfg = $.extend( true, {}, display_config );
-
-  DiffYesterday_cfg.data.labels = days;
-  DiffYesterday_cfg.data.datasets[0].data=DiffYesterday_array;
-  DiffYesterday_cfg.data.datasets[0].backgroundColor = "#00bfbf";
-  DiffYesterday_cfg.data.datasets[0].borderColor = "#00bfbf";
-  DiffYesterday_cfg.data.datasets[0].label="Diff Yesterday";
-  DiffYesterday_cfg.options.scales.yAxes[0].scaleLabel.labelString = "Cases";
-  DiffYesterday_cfg.options.title.text = "Diff Yesterday";
-
-  MortalityRateInfection_cfg.data.labels = days;
-  MortalityRateInfection_cfg.data.datasets[0].data=MortalityRateInfection_array;
-  MortalityRateInfection_cfg.data.datasets[0].backgroundColor = "#00bfbf";
-  MortalityRateInfection_cfg.data.datasets[0].borderColor = "#00bfbf";
-  MortalityRateInfection_cfg.data.datasets[0].label="Mortality Rate infection";
-  MortalityRateInfection_cfg.options.scales.yAxes[0].scaleLabel.labelString = "Cases";
-  MortalityRateInfection_cfg.options.title.text = "Mortality Rate infection";
-
-  MortalityRateClosed_cfg.data.labels = days;
-  MortalityRateClosed_cfg.data.datasets[0].data=MortalityRateClosed_array;
-  MortalityRateClosed_cfg.data.datasets[0].backgroundColor = "#00bfbf";
-  MortalityRateClosed_cfg.data.datasets[0].borderColor = "#00bfbf";
-  MortalityRateClosed_cfg.data.datasets[0].label="Mortality Rate Closed";
-  MortalityRateClosed_cfg.options.scales.yAxes[0].scaleLabel.labelString = "Cases";
-  MortalityRateClosed_cfg.options.title.text = "Mortality Rate Closed";
-
-  CumConfirmed_cfg.data.labels = days;
-  CumConfirmed_cfg.data.datasets[0].data=CumConfirmed_array;
-  CumConfirmed_cfg.data.datasets[0].backgroundColor = "#00bfbf";
-  CumConfirmed_cfg.data.datasets[0].borderColor = "#00bfbf";
-  CumConfirmed_cfg.data.datasets[0].label="Cumulative Confirmed Cases";
-  CumConfirmed_cfg.options.scales.yAxes[0].scaleLabel.labelString = "Cases";
-  CumConfirmed_cfg.options.title.text = "Cumulative Confirmed Cases";
-
-  CumActive_cfg.data.labels = days;
-  CumActive_cfg.data.datasets[0].data=CumActive_array;
-  CumActive_cfg.data.datasets[0].backgroundColor = "#0000ff";
-  CumActive_cfg.data.datasets[0].borderColor = "#0000ff";
-  CumActive_cfg.data.datasets[0].label="Cumulative Active Cases";
-  CumActive_cfg.options.scales.yAxes[0].scaleLabel.labelString = "Cases";
-  CumActive_cfg.options.title.text = "Cumulative Active Cases";
-  
-  CumDeaths_cfg.data.labels = days;
-  CumDeaths_cfg.data.datasets[0].data=CumDeaths_array;
-  CumDeaths_cfg.data.datasets[0].backgroundColor = "#ff0000";
-  CumDeaths_cfg.data.datasets[0].borderColor = "#ff0000";
-  CumDeaths_cfg.data.datasets[0].label="Cumulative Death Cases";
-  CumDeaths_cfg.options.scales.yAxes[0].scaleLabel.labelString = "Deaths";
-  CumDeaths_cfg.options.title.text = "Cumulative Death Cases";
-
-  CumRecovered_cfg.data.labels = days;
-  CumRecovered_cfg.data.datasets[0].data=CumRecovered_array;
-  CumRecovered_cfg.data.datasets[0].backgroundColor = "#008000";
-  CumRecovered_cfg.data.datasets[0].borderColor = "#008000";
-  CumRecovered_cfg.data.datasets[0].label="Cumulative Recovered Cases";
-  CumRecovered_cfg.options.scales.yAxes[0].scaleLabel.labelString = "Recoveries";
-  CumRecovered_cfg.options.title.text = "Cumulative Recovered Cases";
-
-  NewConfirmed_cfg.data.labels = days;
-  NewConfirmed_cfg.data.datasets[0].data=NewConfirmed_array;
-  NewConfirmed_cfg.data.datasets[0].backgroundColor = "#008000";
-  NewConfirmed_cfg.data.datasets[0].borderColor = "#008000";
-  NewConfirmed_cfg.data.datasets[0].label="Daily Confirmed Cases";
-  NewConfirmed_cfg.options.scales.yAxes[0].scaleLabel.labelString = "Cases";
-  NewConfirmed_cfg.options.title.text = "Daily Confirmed Cases";;
-
-  NewDeaths_cfg.data.labels = days;
-  NewDeaths_cfg.data.datasets[0].data=NewDeaths_array;
-  NewDeaths_cfg.data.datasets[0].backgroundColor = "#008000";
-  NewDeaths_cfg.data.datasets[0].borderColor = "#008000";
-  NewDeaths_cfg.data.datasets[0].label="Daily Death Cases";
-  NewDeaths_cfg.options.scales.yAxes[0].scaleLabel.labelString = "Deaths";
-  NewDeaths_cfg.options.title.text = "Daily Death Cases";
-
-  NewRecovered_cfg.data.labels = days;
-  NewRecovered_cfg.data.datasets[0].data=NewRecovered_array;
-  NewRecovered_cfg.data.datasets[0].backgroundColor = "#008000";
-  NewRecovered_cfg.data.datasets[0].borderColor = "#008000";
-  NewRecovered_cfg.data.datasets[0].label="Daily Recovered Cases";
-  NewRecovered_cfg.options.scales.yAxes[0].scaleLabel.labelString = "Recoveries"
-  NewRecovered_cfg.options.title.text = "Daily Recovered Cases";
-
-
-
-  // lethality_cfg.data.labels = days;
-  // lethality_cfg.data.datasets[0].data=leth;
-  // lethality_cfg.data.datasets[0].backgroundColor = "#000000";
-  // lethality_cfg.data.datasets[0].borderColor = "#000000";
-  // lethality_cfg.data.datasets[0].label="Lethality on tested cases";
-  // lethality_cfg.options.scales.yAxes[0].scaleLabel.labelString = "Percentage"
-  // lethality_cfg.options.scales.yAxes[0].ticks =  {
-  //   callback: function(tick) {
-  //     return tick.toString() + '%';
-  //   }
-  // }
-  // var new_dataset = {
-  //   data: leth_on_pos,
-  //   backgroundColor: "#800000",
-  //   borderColor : "#800000",
-  //   fill : false,
-  //   label : "Lethality on Positives only"
-  // }
-  // lethality_cfg.data.datasets.push(new_dataset);
-  // lethality_cfg.options.title.text = "Lethality"
-
-  // cases_percentage_cfg.data.labels = days;
-  // cases_percentage_cfg.data.datasets[0].data=cases_percentage;
-  // cases_percentage_cfg.data.datasets[0].backgroundColor = "#000080";
-  // cases_percentage_cfg.data.datasets[0].borderColor = "#000080";
-  // cases_percentage_cfg.data.datasets[0].label="Percentage";
-  // cases_percentage_cfg.options.scales.yAxes[0].scaleLabel.labelString = "Variation percentage of positive cases "
-  // cases_percentage_cfg.options.title.text = "Variation percentage"
-  // cases_percentage_cfg.options.scales.yAxes[0].ticks =  {
-  //   callback: function(tick) {
-  //     return tick.toString() + '%';
-  //   }
-  // }
-
-  var CumConfirmed_chart = new Chart(CumConfirmed_ctx, CumConfirmed_cfg);
-  var CumActive_chart = new Chart(CumActive_ctx, CumActive_cfg);
-  var CumDeaths_chart = new Chart(CumDeaths_ctx, CumDeaths_cfg);
-  var CumRecovered_chart = new Chart(CumRecovered_ctx, CumRecovered_cfg);
-
-  var NewConfirmed_chart = new Chart(NewConfirmed_ctx,NewConfirmed_cfg);
-  var NewDeaths_chart = new Chart(NewDeaths_ctx,NewDeaths_cfg);
-  var NewRecovered_chart = new Chart(NewRecovered_ctx,NewRecovered_cfg);
-
-  var DiffYesterday_chart = new Chart(DiffYesterday_ctx,DiffYesterday_cfg);
-  var MortalityRateInfection_chart = new Chart(MortalityRateInfection_ctx,MortalityRateInfection_cfg);
-  var MortalityRateClosed_chart =new Chart(MortalityRateClosed_ctx,MortalityRateClosed_cfg)
+function displayCharts() {
+  var loading_rings = document.getElementsByClassName("lds-ring");
+  var charts = document.getElementsByClassName("chart-container")
+  for (let index = 0; index < loading_rings.length; index++) {
+      loading_rings[index].style.display = "none";
+  }
+  for (let index = 0; index < charts.length; index++) {
+      charts[index].style.display = "block";
+  }
 }
 
+function counter_run(covid_data){
+  document.getElementById("today-date").innerHTML = covid_data.days.slice(-1);[0]
+  var cases_counter_cfg = $.extend( true, {}, counter_defaults_cfg );
+  var deaths_counter_cfg = $.extend( true, {}, counter_defaults_cfg );
+  var recovered_counter_cfg = $.extend( true, {}, counter_defaults_cfg );
+  
+  cases_counter_cfg.selector = "#daily-cases-counter";
+  cases_counter_cfg.end = covid_data.NewConfirmed.slice(-1)[0];
+  
+  deaths_counter_cfg.selector = "#daily-deaths-counter";
+  deaths_counter_cfg.end = covid_data.NewDeaths.slice(-1)[0];
+  
+  recovered_counter_cfg.selector = "#daily-recoveries-counter";
+  recovered_counter_cfg.end = covid_data.NewRecovered.slice(-1)[0];
 
+  var cases_counter = new counterUp(cases_counter_cfg);
+  var deaths_counter = new counterUp(deaths_counter_cfg);
+  var recovered_counter = new counterUp(recovered_counter_cfg);
+  cases_counter.start();
+  deaths_counter.start();
+  recovered_counter.start();
+}
+
+function destroy_charts(drownCharts){
+  Object.keys(drownCharts).forEach(function (item) {
+    if (drownCharts[item] != null){
+      drownCharts[item].destroy();
+    }
+  });
+}
+
+function plot_charts(drownCharts,chartsCfg,chartsCtx,covid_data){
+ 
+  // append date to all arrays 
+  Object.keys(chartsCfg).forEach(function (key) {
+    chartsCfg[key].data.labels = covid_data.days;
+  });
+  
+  Object.keys(covid_data).forEach(function (key) {
+    if( key != "days"){
+      chartsCfg[key].data.datasets[0].data = covid_data[key];
+    }
+  });
+
+  Object.keys(drownCharts).forEach(function (item) {
+    drownCharts[item] = new Chart(chartsCtx[item], chartsCfg[item])
+  });
+}
+
+var cached_data = null; //parsed json data goes here
+var drownCharts = {
+  "CumConfirmed": null,
+  "CumActive" : null, 
+  "CumDeaths" : null, 
+  "CumRecovered" : null, 
+  "NewConfirmed" : null, 
+  "NewDeaths" : null, 
+  "NewRecovered" : null, 
+  "DiffYesterday" : null, 
+  "MortalityRateInfection" : null, 
+  "MortalityRateClosed" : null,
+};
+
+var chartsCtx = {
+  "CumConfirmed":  document.getElementById('chart-cum-confirmed').getContext('2d'),
+  "CumActive" :   document.getElementById('chart-cum-active').getContext('2d'), 
+  "CumDeaths" :   document.getElementById('chart-cum-death').getContext('2d'), 
+  "CumRecovered" :   document.getElementById('chart-cum-recovered').getContext('2d'), 
+  "NewConfirmed" :   document.getElementById('chart-new-confirmed').getContext('2d'), 
+  "NewDeaths" :   document.getElementById('chart-new-deaths').getContext('2d'), 
+  "NewRecovered" :   document.getElementById('chart-new-recoveries').getContext('2d'), 
+  "DiffYesterday" :   document.getElementById('chart-DiffYesterday').getContext('2d'), 
+  "MortalityRateInfection" :   document.getElementById('chart-MortalityRateInfection').getContext('2d'), 
+  "MortalityRateClosed" :   document.getElementById('chart-MortalityRateClosed').getContext('2d'),
+};
 var xhr = new XMLHttpRequest(); // a new request
 xhr.open("GET",PCM_DPC_URL,true);
 xhr.onload = function (e) {
   if (xhr.readyState === 4) {
     if (xhr.status === 200) {
-      toggleDisplay();
-      cached_data = JSON.parse(xhr.responseText);
-      plotter(cached_data);
+      displayCharts();
+      cached_data = parse_data(JSON.parse(xhr.responseText));
+      counter_run(cached_data);
     } else {
       console.error(xhr.statusText);
       console.info("Github seems down, moving to cached data")
-      toggleDisplay();
-      plotter(latest_data);
+      displayCharts();
+      cached_data = parse_data(latest_data)
+      counter_run(cached_data);
     }
   }
 };
@@ -287,18 +137,27 @@ xhr.onerror = function (e) {
   console.error(xhr.statusText);
 };
 xhr.send(null);
+
 console.info("waiting for request ...");
 $(document).ready(function(){
-  $("#cum-container").on("show.bs.collapse", function(){
-    plotter(cached_data);
+  $("#cum-container").on("shown.bs.collapse", function(){
+    destroy_charts(drownCharts);
+    plot_charts(drownCharts,chartsCfg,chartsCtx,cached_data);
   });
-  $("#daily-container").on("show.bs.collapse", function(){
-    plotter(cached_data);
+  $("#daily-container").on("shown.bs.collapse", function(){
+    destroy_charts(drownCharts);
+    plot_charts(drownCharts,chartsCfg,chartsCtx,cached_data);
   });
-  $("#stats-container").on("show.bs.collapse", function(){
-    plotter(cached_data);
+  $("#stats-container").on("shown.bs.collapse", function(){
+    destroy_charts(drownCharts);
+    plot_charts(drownCharts,chartsCfg,chartsCtx,cached_data);
+  });
+  $("#home-container").on("shown.bs.collapse", function(){
+    counter_run(cached_data);
   });
   $(document).on('click','#cum-filter',function(e) {
+    //hide menu on mobile device when item selected
+    $("#navbarNavAltMarkup").collapse("hide");    
     $("#home-container").collapse("hide");
     $("#daily-container").collapse("hide");
     $("#stats-container").collapse("hide");
@@ -306,10 +165,13 @@ $(document).ready(function(){
     $("#daily-filter").removeClass("active");
     $("#stats-filter").removeClass("active");
     $("#home-filter").removeClass("active");
-    e.addClass("active");
+    $("#all-filter").removeClass("active");
+    $("#cum-filter").addClass("active");
 
   });
   $(document).on('click','#daily-filter',function(e) {
+    //hide menu on mobile device when item selected
+    $("#navbarNavAltMarkup").collapse("hide");   
     $("#home-container").collapse("hide");
     $("#stats-container").collapse("hide");
     $("#cum-container").collapse("hide");
@@ -317,27 +179,55 @@ $(document).ready(function(){
     $("#cum-filter").removeClass("active");
     $("#stats-filter").removeClass("active");
     $("#home-filter").removeClass("active");
-    e.addClass("active");
+    $("#all-filter").removeClass("active");
+    $("#daily-filter").addClass("active");
   });
   $(document).on('click','#stats-filter',function(e) {
+    //hide menu on mobile device when item selected
+    $("#navbarNavAltMarkup").collapse("hide");
+
     $("#home-container").collapse("hide");
     $("#daily-container").collapse("hide");
     $("#cum-container").collapse("hide");
+
+
     $("#stats-container").collapse("show");
     $("#daily-filter").removeClass("active");
     $("#cum-filter").removeClass("active");
     $("#home-filter").removeClass("active");
-    e.addClass("active");
+    $("#all-filter").removeClass("active");
+    $("#stats-filter").addClass("active");
   });
   $(document).on('click','#home-filter',function(e) {
+    //hide menu on mobile device when item selected
+    $("#navbarNavAltMarkup").collapse("hide");
     $("#daily-container").collapse("hide");
     $("#stats-container").collapse("hide");
     $("#cum-container").collapse("hide");
+
+    
     $("#home-container").collapse("show");
     $("#daily-filter").removeClass("active");
     $("#cum-filter").removeClass("active");
     $("#stats-filter").removeClass("active");
-    e.addClass("active");
+    $("#all-filter").removeClass("active");
+    $("#home-filter").addClass("active");
+  });
+  $(document).on('click','#all-filter',function(e) {
+    //hide menu on mobile device when item selected
+    $("#navbarNavAltMarkup").collapse("hide");
+    
+    $("#home-container").collapse("hide");
+
+    $("#cum-container").collapse("show");    
+    $("#daily-container").collapse("show");
+    $("#stats-container").collapse("show");
+
+    $("#daily-filter").removeClass("active");
+    $("#cum-filter").removeClass("active");
+    $("#stats-filter").removeClass("active");
+    $("#home-filter").removeClass("active");
+    $("#all-filter").addClass("active");
   });
 
 });

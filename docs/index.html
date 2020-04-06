@@ -17,12 +17,12 @@
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-        <a class="navbar-brand" href="#">Covid-19</a>
+        <a class="navbar-brand" href="#">EGY-COVID-19</a>
         </div>
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
           <div class="navbar-nav">
             <a class="nav-item nav-link active" href="#" id="home-filter" >Home <span class="sr-only">(current)</span></a>
-
+            <a class="nav-item nav-link" id="all-filter"  href="#" >All Data</a>
             <a class="nav-item nav-link" id="cum-filter"  href="#" >Cumulative Data</a>
             <a class="nav-item nav-link" id="daily-filter"  href="#" >Daily Data</a>
             <a class="nav-item nav-link" id="stats-filter"  href="#" >Statistics</a>
@@ -36,36 +36,63 @@
     </div>
     <div class="container-fluid">
       <div class="row justify-content-center ">
-        <h1 class="text-center">COVID-19 Egyptian Monitoring</h1>
+        <h1 class="text-center">COVID-19 Egyptian Situation </h1>
       </div>
     </div>
     <div class="container-fluid collapse show" id='home-container'>
       <div class="row justify-content-center h-100">
         <div class= "col-md-2"></div>
-        <div class= "col-md-8" style="margin-top: 25vh; ">
+        <div class= "col-md-8" >
           <p class="lead text-center">
-            This project is open initiative to provide a minimal monitoring platform for the Egyptian covid19 situation.<br />
-            Start by clicking one of the available links in the nav bar: 
+            This project is open initiative to provide a minimal monitoring platform for the Egyptian covid19 situation. You can also see the situation progress from the menu 
           </p>
-          <div  class="row  justify-content-center">
-            <ul>
-              <li><strong>home</strong> for this home page</li>
-              <li><strong>Cumulative Data</strong> for all the data gathered from the breakout</li>
-              <li><strong>Daily Data</strong> for day by day updates on the situation</li>
-              <li><strong>Statistics </strong> for useful statistics on the data</li>   
-            </ul>
-          </div>
         </div>
         <div class= "col-md-2"></div>
       </div>
-
+      <div class="row justify-content-center">
+        <div class="col-md-3"></div>
+        <div class="col-md-6 alert alert-secondary">
+          <p class="h3 text-center">
+            Update Date
+          </p>
+          <p class="lead text-center" id="today-date">
+            
+          </p> 
+        </div>
+        <div class="col-md-3"></div>
+      </div>
+        <div class="row justify-content-center h-100">
+          <div class= "col-md-2"></div>
+          <div class= "col-md-8">
+            <div class="row justify-content-center">
+              <div class= "col-md-3 alert alert-warning">
+                <h4 class="alert-heading text-center">New Cases </h4>
+                <p class="text-center" id="daily-cases-counter">
+                  0
+                </p>              </div>
+              <div class= "col-md-3 alert alert-danger">
+                <h4 class="alert-heading text-center">New Deaths </h4>
+                <p class="text-center" id="daily-deaths-counter">
+                  0
+                </p>
+              </div>
+              <div class= "col-md-3 alert alert-success">
+                <h4 class="alert-heading text-center">New Recoveries </h4>
+                <p class="text-center" id="daily-recoveries-counter">
+                  0
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class= "col-md-2"></div>
+      </div>
     </div>
 
     <div class="container-fluid collapse" id='cum-container'>
       <div class="row">
         <div class="col-md" style = "height:40vh;" >
           <div class="lds-ring", id="loading-circle"><div></div><div></div><div></div><div></div></div>
-            <canvas id="chart-cum-confirmed" dir="rtl"></canvas>
+            <canvas id="chart-cum-confirmed"></canvas>
         </div>
         <div class="col-md" style = "height:40vh;">
           <div class="lds-ring", id="loading-circle-2"><div></div><div></div><div></div><div></div></div>
@@ -130,7 +157,9 @@
     <!-- Chart js include -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"> </script>
     <!-- real js code -->
+    <script src="./assets/js/count-up.js"></script>
     <script src="./assets/js/EG-COVID-19.js"></script>
+    <script src="./assets/js/constants.js"></script>
     <script src="./assets/js/frontend.js"></script>
   </body>
 </html>
