@@ -63,7 +63,28 @@ function counter_run(covid_data){
   recovered_counter.start();
 }
 
+function reset_zoom(drownCharts) {
+  Object.keys(drownCharts).forEach(function (item) {
+    if (drownCharts[item] != null){
+      drownCharts[item].resetZoom();
+    }
+  });
+}
+function set_zoom(chartsCfg,status){
+  Object.keys(chartsCfg).forEach(function (key) {
+    if (status == true){
+      chartsCfg[key].options.plugins.zoom.zoom.enabled = true;
+      chartsCfg[key].options.plugins.zoom.pan.enabled = true;
+    }else{
+      chartsCfg[key].options.plugins.zoom.zoom.enabled = false;
+      chartsCfg[key].options.plugins.zoom.pan.enabled = false;
+    }
+
+  });
+
+}
 function destroy_charts(drownCharts){
+  reset_zoom(drownCharts);
   Object.keys(drownCharts).forEach(function (item) {
     if (drownCharts[item] != null){
       drownCharts[item].destroy();
@@ -87,10 +108,13 @@ function plot_charts(drownCharts,chartsCfg,chartsCtx,covid_data){
       chartsCfg[key].data.datasets[0].data = covid_data[key];
     }
   });
+  console.log("am in plotter")
+  console.log(chartsCfg);
 
   Object.keys(drownCharts).forEach(function (item) {
     drownCharts[item] = new Chart(chartsCtx[item], chartsCfg[item])
   });
+  $("#zoom-container").collapse("show");
 }
 
 var cached_data = null; //parsed json data goes here
@@ -158,6 +182,18 @@ $(document).ready(function(){
   $("#home-container").on("shown.bs.collapse", function(){
     counter_run(cached_data);
   });
+  $(document).on('click','#reset-zoom-button',function(){
+    reset_zoom(drownCharts);
+  });
+  $(document).on('change','#enable-zoom',function(){
+    if ($('#enable-zoom:checked').length){
+      set_zoom(chartsCfg,true);
+    } else{
+      reset_zoom(drownCharts);
+      set_zoom(chartsCfg,false);
+    }
+    plot_charts(drownCharts,chartsCfg,chartsCtx,cached_data);
+  });
   $(document).on('click','#cum-filter',function(e) {
     //hide menu on mobile device when item selected
     $("#navbarNavAltMarkup").collapse("hide");    
@@ -188,12 +224,9 @@ $(document).ready(function(){
   $(document).on('click','#stats-filter',function(e) {
     //hide menu on mobile device when item selected
     $("#navbarNavAltMarkup").collapse("hide");
-
     $("#home-container").collapse("hide");
     $("#daily-container").collapse("hide");
     $("#cum-container").collapse("hide");
-
-
     $("#stats-container").collapse("show");
     $("#daily-filter").removeClass("active");
     $("#cum-filter").removeClass("active");
@@ -207,8 +240,7 @@ $(document).ready(function(){
     $("#daily-container").collapse("hide");
     $("#stats-container").collapse("hide");
     $("#cum-container").collapse("hide");
-
-    
+    $("#zoom-container").collapse("hide");
     $("#home-container").collapse("show");
     $("#daily-filter").removeClass("active");
     $("#cum-filter").removeClass("active");
