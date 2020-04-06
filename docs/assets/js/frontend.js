@@ -70,7 +70,7 @@ function reset_zoom(drownCharts) {
     }
   });
 }
-function set_zoom(chartsCfg,status){
+function set_zoom(drownCharts,chartsCfg,status){
   Object.keys(chartsCfg).forEach(function (key) {
     if (status == true){
       chartsCfg[key].options.plugins.zoom.zoom.enabled = true;
@@ -79,7 +79,9 @@ function set_zoom(chartsCfg,status){
       chartsCfg[key].options.plugins.zoom.zoom.enabled = false;
       chartsCfg[key].options.plugins.zoom.pan.enabled = false;
     }
-
+    Object.keys(drownCharts).forEach(function (item) {
+      drownCharts[item].render(chartsCfg[key]);
+    });
   });
 
 }
@@ -108,8 +110,6 @@ function plot_charts(drownCharts,chartsCfg,chartsCtx,covid_data){
       chartsCfg[key].data.datasets[0].data = covid_data[key];
     }
   });
-  console.log("am in plotter")
-  console.log(chartsCfg);
 
   Object.keys(drownCharts).forEach(function (item) {
     drownCharts[item] = new Chart(chartsCtx[item], chartsCfg[item])
@@ -187,12 +187,11 @@ $(document).ready(function(){
   });
   $(document).on('change','#enable-zoom',function(){
     if ($('#enable-zoom:checked').length){
-      set_zoom(chartsCfg,true);
+      set_zoom(drownCharts,chartsCfg,true);
     } else{
       reset_zoom(drownCharts);
-      set_zoom(chartsCfg,false);
+      set_zoom(drownCharts,chartsCfg,false);
     }
-    plot_charts(drownCharts,chartsCfg,chartsCtx,cached_data);
   });
   $(document).on('click','#cum-filter',function(e) {
     //hide menu on mobile device when item selected
