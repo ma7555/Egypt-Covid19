@@ -63,30 +63,7 @@ function counter_run(covid_data){
   recovered_counter.start();
 }
 
-function reset_zoom(drownCharts) {
-  Object.keys(drownCharts).forEach(function (item) {
-    if (drownCharts[item] != null){
-      drownCharts[item].resetZoom();
-    }
-  });
-}
-function set_zoom(drownCharts,chartsCfg,status){
-  Object.keys(chartsCfg).forEach(function (key) {
-    if (status == true){
-      chartsCfg[key].options.plugins.zoom.zoom.enabled = true;
-      chartsCfg[key].options.plugins.zoom.pan.enabled = true;
-    }else{
-      chartsCfg[key].options.plugins.zoom.zoom.enabled = false;
-      chartsCfg[key].options.plugins.zoom.pan.enabled = false;
-    }
-    Object.keys(drownCharts).forEach(function (item) {
-      drownCharts[item].render(chartsCfg[key]);
-    });
-  });
-
-}
 function destroy_charts(drownCharts){
-  reset_zoom(drownCharts);
   Object.keys(drownCharts).forEach(function (item) {
     if (drownCharts[item] != null){
       drownCharts[item].destroy();
@@ -181,17 +158,6 @@ $(document).ready(function(){
   });
   $("#home-container").on("shown.bs.collapse", function(){
     counter_run(cached_data);
-  });
-  $(document).on('click','#reset-zoom-button',function(){
-    reset_zoom(drownCharts);
-  });
-  $(document).on('change','#enable-zoom',function(){
-    if ($('#enable-zoom:checked').length){
-      set_zoom(drownCharts,chartsCfg,true);
-    } else{
-      reset_zoom(drownCharts);
-      set_zoom(drownCharts,chartsCfg,false);
-    }
   });
   $(document).on('click','#cum-filter',function(e) {
     //hide menu on mobile device when item selected
