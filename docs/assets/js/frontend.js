@@ -14,9 +14,7 @@ function parse_data(raw_data){
   }
 
   for(var k in raw_data) {
-    var myDate = new Date(raw_data[k].date);
-    var parsed_date = myDate.getDate()+" "+(monthNames[myDate.getMonth()]);
-    parsed_data.days.push(parsed_date);
+    parsed_data.days.push(new Date(raw_data[k].date));
     parsed_data.CumConfirmed.push(raw_data[k].CumConfirmed);
     parsed_data.CumDeaths.push(raw_data[k].CumDeaths);
     parsed_data.CumRecovered.push(raw_data[k].CumRecovered);
@@ -42,7 +40,8 @@ function displayCharts() {
 }
 
 function counter_run(covid_data){
-  document.getElementById("today-date").innerHTML = covid_data.days.slice(-1);[0]
+  var today_date = covid_data.days.slice(-1)[0].getDate()+" "+ (monthNames[covid_data.days.slice(-1)[0].getMonth()])+" "+ covid_data.days.slice(-1)[0].getFullYear();
+  document.getElementById("today-date").innerHTML = today_date;
   var cases_counter_cfg = $.extend( true, {}, counter_defaults_cfg );
   var deaths_counter_cfg = $.extend( true, {}, counter_defaults_cfg );
   var recovered_counter_cfg = $.extend( true, {}, counter_defaults_cfg );
@@ -73,10 +72,14 @@ function destroy_charts(drownCharts){
 }
 
 function plot_charts(drownCharts,chartsCfg,chartsCtx,covid_data){
- 
+  // extract date
+  var noYearDate = []
+  for (let index = 0; index < covid_data.days.length; index++) {
+    noYearDate.push(covid_data.days[index].getDate()+" "+ (monthNames[covid_data.days[index].getMonth()])) 
+  }
   // append date to all arrays 
   Object.keys(chartsCfg).forEach(function (key) {
-    chartsCfg[key].data.labels = covid_data.days;
+    chartsCfg[key].data.labels = noYearDate;
   });
   
   Object.keys(covid_data).forEach(function (key) {
